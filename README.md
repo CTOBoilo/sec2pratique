@@ -1,5 +1,7 @@
 # Pratique Sec 2
 
+**Le site : https://ctoboilo.github.io/sec2pratique/**
+
 Site de pratique hebdomadaire : grammaire, conjugaison, finales de verbes en [é] (extraits de littérature française du domaine public), rédaction de 100 mots et maths (programme du Secondaire 2 au Québec).
 
 - Tout fonctionne dans le navigateur : aucun compte, aucune donnée envoyée.

@@ -51,6 +51,15 @@
   #compteur.bon { color: var(--ok); }
   #compteur.loin { color: var(--orange); }
   .aide { color: var(--doux); font-size: .9rem; }
+  .extrait { background: var(--carte); border: 1px solid var(--bord); border-radius: 12px; padding: 4px 18px; font-family: Georgia, "Times New Roman", serif; font-size: 1.1rem; line-height: 2; }
+  .mot { white-space: nowrap; }
+  input.fin { width: 3.6em; font: inherit; font-size: .95em; padding: 0 4px; margin: 0 1px; border: 0; border-bottom: 2px solid var(--accent); background: var(--fond); color: var(--texte); }
+  input.fin.ok { border-color: var(--ok); color: var(--ok); }
+  input.fin.ko { border-color: var(--ko); color: var(--ko); }
+  sup.corr { color: var(--ok); font-weight: 600; margin-left: 2px; }
+  .source { color: var(--doux); font-style: italic; text-align: right; }
+  .explications { padding-left: 20px; }
+  .explications li { margin-bottom: 6px; }
   button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 </style>
 </head>
@@ -69,6 +78,7 @@
     <button role="tab" data-tab="grammaire">Grammaire</button>
     <button role="tab" data-tab="conjugaison">Conjugaison</button>
     <button role="tab" data-tab="redaction">Rédaction</button>
+    <button role="tab" data-tab="finales">Finales en [é]</button>
     <button role="tab" data-tab="maths">Maths</button>
   </nav>
 
@@ -88,6 +98,14 @@
     <p class="aide">Relis-toi : majuscules, ponctuation, accords dans le GN, accord du verbe, participes passés. Ton brouillon est gardé sur cet appareil.</p>
     <textarea id="texte" aria-label="Ton texte" spellcheck="false" autocorrect="off" placeholder="Écris ton texte ici…"></textarea>
     <div class="barre"><span id="compteur"></span><button id="copier" class="action secondaire">Copier</button><button id="courriel" class="action">Envoyer par courriel</button></div>
+  </section>
+
+  <section id="finales" role="tabpanel" hidden>
+    <p class="aide">Complète chaque verbe avec sa finale : <b>er, é, ée, és, ées, ez, ai, ais, ait, aient</b>. Truc : remplace par <i>vendre</i>, <i>vendu(e)(s)</i> ou <i>vendait</i>.</p>
+    <div class="extrait"></div>
+    <p class="source"></p>
+    <div class="barre"><button class="action corriger">Corriger</button><span class="score"></span><span class="meilleur"></span></div>
+    <ul class="explications"></ul>
   </section>
 
   <section id="maths" role="tabpanel" hidden>

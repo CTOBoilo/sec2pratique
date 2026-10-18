@@ -1,6 +1,6 @@
 # Pratique Sec 2
 
-Site de pratique hebdomadaire : grammaire, conjugaison, rédaction de 100 mots et maths (programme du Secondaire 2 au Québec).
+Site de pratique hebdomadaire : grammaire, conjugaison, finales de verbes en [é] (extraits de littérature française du domaine public), rédaction de 100 mots et maths (programme du Secondaire 2 au Québec).
 
 - Tout fonctionne dans le navigateur : aucun compte, aucune donnée envoyée.
 - Les exercices changent automatiquement chaque lundi. Le bouton « Nouvelle série » en donne d'autres.

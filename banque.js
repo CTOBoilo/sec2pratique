@@ -322,4 +322,83 @@ const SUJETS = [
   'Que ferais-tu avec 1000 $ pour aider ton quartier ?',
 ];
 
-if (typeof module !== 'undefined') module.exports = { GRAMMAIRE, SUJETS };
+// Finales de verbes en [é] dans des extraits d'œuvres du domaine public (texte de Project Gutenberg).
+// {radical|finale} = la finale à trouver. Une ligne vide = nouveau paragraphe. […] = passage coupé.
+const FINALES = {
+  'er': 'Infinitif : on peut le remplacer par « vendre » ou « mordre ». Souvent après une préposition (à, de, pour, sans) ou un autre verbe.',
+  'é': 'Participe passé : on peut le remplacer par « vendu ». Masculin singulier.',
+  'ée': 'Participe passé : on peut le remplacer par « vendue ». Il s\'accorde au féminin singulier.',
+  'és': 'Participe passé : on peut le remplacer par « vendus ». Il s\'accorde au masculin pluriel.',
+  'ées': 'Participe passé : on peut le remplacer par « vendues ». Il s\'accorde au féminin pluriel.',
+  'ez': 'Le sujet est « vous » : -ez.',
+  'ai': 'Passé simple ou futur avec « je » : -ai.',
+  'ais': 'Imparfait ou conditionnel avec « je » ou « tu » : -ais (on peut dire « vendais »).',
+  'ait': 'Imparfait ou conditionnel avec il / elle / on (ou un nom singulier) : -ait (on peut dire « vendait »).',
+  'aient': 'Imparfait ou conditionnel avec ils / elles (ou un nom pluriel) : -aient (on peut dire « vendaient »).',
+};
+
+const TEXTES = [
+  { source: 'Alphonse Daudet, « La dernière classe », Contes du lundi (1873)', texte: `Ce matin-là j'{ét|ais} très en retard pour {all|er} à l'école, et j'{av|ais} grand'peur d'être {grond|é}, d'autant que M. Hamel nous {av|ait} dit qu'il nous {interroger|ait} sur les participes, et je n'en {sav|ais} pas le premier mot. Un moment l'idée me vint de {manqu|er} la classe et de prendre ma course à travers champs.
+
+Le temps {ét|ait} si chaud, si clair!
+
+On {entend|ait} les merles {siffl|er} à la lisière du bois, et dans le pré Rippert, derrière la scierie, les Prussiens qui {fais|aient} l'exercice. Tout cela me {tent|ait} bien plus que la règle des participes; mais j'eus la force de {résist|er}, et je courus bien vite vers l'école.` },
+
+  { source: 'Alphonse Daudet, « La dernière classe », Contes du lundi (1873)', texte: `En passant devant la mairie, je vis qu'il y {av|ait} du monde {arrêt|é} près du petit grillage aux affiches. Depuis deux ans, c'est de là que nous sont venues toutes les mauvaises nouvelles, les batailles perdues, les réquisitions, les ordres de la commandature; et je {pens|ai} sans m'{arrêt|er}:
+
+«Qu'est-ce qu'il y a encore?»
+
+Alors, comme je {travers|ais} la place en courant, le forgeron Wachter, qui {ét|ait} là avec son apprenti en train de lire l'affiche, me cria:
+
+«Ne te dépêche pas tant, petit; tu y arriveras toujours assez tôt à ton école!»
+
+Je crus qu'il se {moqu|ait} de moi, et j'{entr|ai} tout {essouffl|é} dans la petite cour de M. Hamel.` },
+
+  { source: 'Alphonse Daudet, « La chèvre de M. Seguin », Lettres de mon moulin (1869)', texte: `M. Seguin n'{av|ait} jamais eu de bonheur avec ses chèvres.
+
+Il les {perd|ait} toutes de la même façon: un beau matin, elles {cass|aient} leur corde, s'en {all|aient} dans la montagne, et là-haut le loup les {mange|ait}. Ni les caresses de leur maître, ni la peur du loup, rien ne les {reten|ait}. C'{ét|ait}, paraît-il, des chèvres indépendantes, voulant à tout prix le grand air et la liberté.
+
+Le brave M. Seguin, qui ne {compren|ait} rien au caractère de ses bêtes, {ét|ait} {constern|é}. Il {dis|ait}:
+
+— C'est fini; les chèvres s'ennuient chez moi, je n'en {garder|ai} pas une.` },
+
+  { source: 'Alphonse Daudet, « La chèvre de M. Seguin », Lettres de mon moulin (1869)', texte: `Ah! Gringoire, qu'elle {ét|ait} jolie la petite chèvre de M. Seguin! qu'elle {ét|ait} jolie avec ses yeux doux, sa barbiche de sous-officier, ses sabots noirs et luisants, ses cornes {zébr|ées} et ses longs poils blancs qui lui {fais|aient} une houppelande! […]
+
+M. Seguin {av|ait} derrière sa maison un clos {entour|é} d'aubépines. C'est là qu'il mit la nouvelle pensionnaire. Il l'attacha à un pieu, au plus bel endroit du pré, en ayant soin de lui {laiss|er} beaucoup de corde, et de temps en temps il {ven|ait} voir si elle {ét|ait} bien. La chèvre se {trouv|ait} très heureuse et {brout|ait} l'herbe de si bon coeur que M. Seguin {ét|ait} ravi.` },
+
+  { source: 'Alphonse Daudet, « La chèvre de M. Seguin », Lettres de mon moulin (1869)', texte: `Quand la chèvre blanche arriva dans la montagne, ce fut un ravissement général. Jamais les vieux sapins n'{av|aient} rien vu d'aussi joli. On la reçut comme une petite reine. Les châtaigniers se {baiss|aient} jusqu'à terre pour la {caress|er} du bout de leurs branches. Les genêts d'or s'{ouvr|aient} sur son passage, et {sent|aient} bon tant qu'ils {pouv|aient}. Toute la montagne lui fit fête.
+
+Tu penses, Gringoire, si notre chèvre {ét|ait} heureuse! Plus de corde, plus de pieu... rien qui l'empêchât de {gambad|er}, de {brout|er} à sa guise... C'est là qu'il y en {av|ait} de l'herbe! jusque par-dessus les cornes, mon cher!... Et quelle herbe! Savoureuse, fine, {dentel|ée}, faite de mille plantes...` },
+
+  { source: 'Alain-Fournier, Le Grand Meaulnes (1913)', texte: `Nous habitions les bâtiments du Cours Supérieur de Sainte-Agathe. Mon père, que j'{appel|ais} M. Seurel, comme les autres élèves, y {dirige|ait} à la fois le Cours supérieur, où l'on {prépar|ait} le brevet d'instituteur, et le Cours moyen. Ma mère {fais|ait} la petite classe. […]
+
+Le hasard des «changements», une décision d'inspecteur ou de préfet, nous {av|aient} conduits là. Vers la fin des vacances, il y a bien longtemps, une voiture de paysan, qui {précéd|ait} notre ménage, nous {av|ait} {dépos|és}, ma mère et moi, devant la petite grille {rouill|ée}. Des gamins qui {vol|aient} des pêches dans le jardin s'{ét|aient} enfuis silencieusement par les trous de la haie...` },
+
+  { source: 'Gustave Flaubert, « Un cœur simple », Trois contes (1877)', texte: `Pendant un demi-siècle, les bourgeoises de Pont l'Evêque envièrent à Mme Aubain sa servante Félicité.
+
+Pour cent francs par an, elle {fais|ait} la cuisine et le ménage, {cous|ait}, {lav|ait}, {repass|ait}, {sav|ait} {brid|er} un cheval, {engraiss|er} les volailles, battre le beurre, et resta fidèle à sa maîtresse, — qui cependant n'{ét|ait} pas une personne agréable.
+
+Elle {av|ait} {épous|é} un beau garçon sans fortune, mort au commencement de 1809, en lui laissant deux enfants très jeunes avec une quantité de dettes. Alors elle vendit ses immeubles, sauf la ferme de Toucques et la ferme de Geffosses, dont les rentes {mont|aient} à 5 000 francs tout au plus, et elle quitta sa maison de Saint-Melaine pour en {habit|er} une autre moins dispendieuse, ayant appartenu à ses ancêtres et {plac|ée} derrière les halles.` },
+
+  { source: 'Louis Hémon, Maria Chapdelaine (1914)', texte: `La porte de l'église de Péribonka s'ouvrit et les hommes commencèrent à sortir.
+
+Un instant plus tôt elle {av|ait} paru {désol|ée}, cette église, {juch|ée} au bord du chemin sur la berge haute, au-dessus de la rivière Péribonka, dont la nappe {glac|ée} et couverte de neige {ét|ait} toute pareille à une plaine. La neige {gis|ait} épaisse sur le chemin aussi, et sur les champs, car le soleil d'avril n'{envoy|ait} entre les nuages gris que quelques rayons sans chaleur et les grandes pluies de printemps n'{ét|aient} pas encore venues. Toute cette blancheur froide, la petitesse de l'église de bois et des quelques maisons, de bois également, {espac|ées} le long du chemin, la lisière sombre de la forêt, si proche qu'elle {sembl|ait} une menace, tout {parl|ait} d'une vie dure dans un pays austère.` },
+
+  { source: 'Jules Renard, Poil de Carotte (1894)', texte: `— Je parie, dit madame Lepic, qu'Honorine a encore {oubli|é} de {ferm|er} les poules.
+
+C'est vrai. On peut s'en {assur|er} par la fenêtre. Là-bas, tout au fond de la grande cour, le petit toit aux poules découpe, dans la nuit, le carré noir de sa porte ouverte.
+
+— Félix, si tu {all|ais} les {ferm|er}? dit madame Lepic à l'aîné de ses trois enfants.
+
+— Je ne suis pas ici pour m'{occup|er} des poules, dit Félix, garçon pâle, indolent et poltron.
+
+— Et toi, Ernestine?
+
+— Oh! Moi, maman, j'{aur|ais} trop peur!
+
+Grand frère Félix et soeur Ernestine lèvent à peine la tête pour répondre. Ils lisent, très {intéress|és}, les coudes sur la table, presque front contre front.
+
+— Dieu, que je suis bête! Dit madame Lepic. Je n'y {pens|ais} plus. Poil de Carotte, va {ferm|er} les poules!` },
+];
+
+if (typeof module !== 'undefined') module.exports = { GRAMMAIRE, SUJETS, FINALES, TEXTES };

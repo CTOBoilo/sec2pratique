@@ -82,6 +82,18 @@ function questionsMaths(R, actuels, anciens) {
   return out;
 }
 
+// Extrait littéraire : chaque {radical|finale} devient une case à remplir.
+// Rotation : un extrait différent chaque semaine, tous passent avant qu'un revienne.
+function extraitFinales(n) {
+  const t = TEXTES[((n % TEXTES.length) + TEXTES.length) % TEXTES.length], mots = [];
+  const html = t.texte.split(/\n\s*\n/).map(p => '<p>' + p.replace(/\{([^|}]+)\|([^}]+)\}/g, (_, rad, fin) =>
+    `<span class="mot">${rad}<input class="fin" data-i="${mots.push({ rad, fin }) - 1}" aria-label="Finale de ${rad}…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></span>`) + '</p>').join('');
+  return { source: t.source, html, mots };
+}
+
+// Accepte la finale seule (« er ») ou le mot entier (« manquer »).
+const finaleJuste = (m, valeur) => { const v = String(valeur).trim().toLowerCase().replace(/^-/, ''); return v === m.fin || v === (m.rad + m.fin).toLowerCase(); };
+
 // Tout le contenu d'une semaine. Même date + même série = mêmes questions.
 function construire(date, serie = 0) {
   const lun = lundi(date), cle = isoLocal(lun);
@@ -100,6 +112,7 @@ function construire(date, serie = 0) {
     maths: questionsMaths(R, resoudre(actuel.maths, MATHS, avert), resoudre(anciens('maths'), MATHS, [])),
     sujet: actuel.sujet || creerRng(hash(cle)).pick(SUJETS), // le sujet ne change pas avec « Nouvelle série »
     mots: actuel.mots || 100,
+    finales: extraitFinales(Math.round(lun / 6048e5) + serie),
   };
 }
 
@@ -118,7 +131,7 @@ function estJuste(q, valeur) {
 
 const compterMots = t => t.trim().split(/\s+/).filter(m => /[\p{L}\p{N}]/u.test(m)).length;
 
-if (typeof module !== 'undefined') module.exports = { construire, normaliser, estJuste, compterMots, lundi, isoLocal };
+if (typeof module !== 'undefined') module.exports = { construire, normaliser, estJuste, compterMots, lundi, isoLocal, finaleJuste };
 
 // ===================== Page web =====================
 if (typeof document !== 'undefined') {
@@ -149,7 +162,8 @@ if (typeof document !== 'undefined') {
 
   function afficherMeilleur(nom) {
     const m = stock.get(`meilleur:${semaine.cle}:${nom}`);
-    $(`#${nom} .meilleur`).textContent = m ? `Meilleur score cette semaine : ${m} / ${semaine[nom].length}` : '';
+    const total = nom === 'finales' ? semaine.finales.mots.length : semaine[nom].length;
+    $(`#${nom} .meilleur`).textContent = m ? `Meilleur score cette semaine : ${m} / ${total}` : '';
   }
 
   function corriger(nom) {
@@ -170,6 +184,37 @@ if (typeof document !== 'undefined') {
     afficherMeilleur(nom);
   }
 
+  function afficherFinales() {
+    const f = semaine.finales;
+    $('#finales .extrait').innerHTML = f.html;
+    $('#finales .source').textContent = f.source;
+    $('#finales .explications').innerHTML = '';
+    $('#finales .score').textContent = '';
+    afficherMeilleur('finales');
+  }
+
+  function corrigerFinales() {
+    const f = semaine.finales, erreurs = new Map();
+    let bons = 0;
+    document.querySelectorAll('#finales input.fin').forEach(inp => {
+      const m = f.mots[inp.dataset.i], ok = finaleJuste(m, inp.value);
+      bons += ok;
+      inp.classList.toggle('ok', ok);
+      inp.classList.toggle('ko', !ok);
+      inp.nextElementSibling?.classList.contains('corr') && inp.nextElementSibling.remove();
+      if (!ok) {
+        inp.insertAdjacentHTML('afterend', `<sup class="corr">${m.fin}</sup>`);
+        erreurs.set(m.rad + m.fin, m.fin);
+      }
+    });
+    $('#finales .explications').innerHTML = [...erreurs].map(([mot, fin]) =>
+      `<li><b>${esc(mot.slice(0, -fin.length))}<u>${esc(fin)}</u></b> — ${esc(FINALES[fin] || '')}</li>`).join('');
+    $('#finales .score').textContent = `${bons} / ${f.mots.length}`;
+    const cle = `meilleur:${semaine.cle}:finales`;
+    if (bons > Number(stock.get(cle) || -1)) stock.set(cle, bons);
+    afficherMeilleur('finales');
+  }
+
   function charger() {
     semaine = construire(date, serie);
     const jour = semaine.lundi.toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -177,6 +222,7 @@ if (typeof document !== 'undefined') {
     $('#avert').hidden = !semaine.avert.length;
     $('#avert').textContent = 'Erreur dans themes.js — ' + [...new Set(semaine.avert)].join(' · ');
     ['grammaire', 'conjugaison', 'maths'].forEach(afficherQuiz);
+    afficherFinales();
   }
 
   // Rédaction
@@ -208,7 +254,7 @@ if (typeof document !== 'undefined') {
     document.querySelectorAll('[role=tabpanel]').forEach(p => (p.hidden = p.id !== b.dataset.tab));
     stock.set('onglet', b.dataset.tab);
   }));
-  document.querySelectorAll('.corriger').forEach(b => b.addEventListener('click', () => corriger(b.closest('section').id)));
+  document.querySelectorAll('.corriger').forEach(b => b.addEventListener('click', () => { const nom = b.closest('section').id; nom === 'finales' ? corrigerFinales() : corriger(nom); }));
   $('#nouvelle').addEventListener('click', () => { serie++; charger(); });
 
   charger();

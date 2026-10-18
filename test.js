@@ -2,9 +2,9 @@
 const assert = require('assert');
 const { conjuguer, reponsesAcceptees, VERBES, TEMPS } = require('./conjugaison.js');
 const { MATHS, creerRng, lireNombre, verifierNombre, verifierExpr } = require('./maths.js');
-const { GRAMMAIRE } = require('./banque.js');
+const { GRAMMAIRE, TEXTES, FINALES } = require('./banque.js');
 const { THEMES } = require('./themes.js');
-const { construire, normaliser, estJuste, compterMots } = require('./app.js');
+const { construire, normaliser, estJuste, compterMots, finaleJuste } = require('./app.js');
 
 // --- Conjugaison : formes connues
 const c = (v, t) => conjuguer(v, t).join(' ');
@@ -96,6 +96,21 @@ for (let d = new Date('2026-08-31T12:00'); d < new Date('2027-06-30'); d.setDate
 const lundi = construire(new Date('2026-10-19T12:00')), jeudi = construire(new Date('2026-10-22T12:00'));
 assert.strictEqual(JSON.stringify(lundi.maths), JSON.stringify(jeudi.maths));
 assert.notStrictEqual(JSON.stringify(construire(new Date('2026-10-19T12:00'), 1).maths), JSON.stringify(lundi.maths));
+
+// --- Finales en [é] : extraits bien annotés, rotation complète, correction
+for (const t of TEXTES) {
+  const marques = [...t.texte.matchAll(/\{([^|}]+)\|([^}]+)\}/g)];
+  assert(marques.length >= 8, `${t.source} : seulement ${marques.length} finales`);
+  for (const [, , fin] of marques) assert(FINALES[fin], `${t.source} : finale inconnue « ${fin} »`);
+  assert(!/[{}|]/.test(t.texte.replace(/\{[^|}]+\|[^}]+\}/g, '')), `${t.source} : accolade mal fermée`);
+}
+{
+  const vus = new Set();
+  for (let i = 0; i < TEXTES.length; i++) vus.add(construire(new Date(2026, 9, 19 + 7 * i, 12)).finales.source + construire(new Date(2026, 9, 19 + 7 * i, 12)).finales.mots.length);
+  assert.strictEqual(vus.size, new Set(TEXTES.map(t => t.source + [...t.texte.matchAll(/\{/g)].length)).size, 'chaque extrait passe une fois');
+  const m = { rad: 'manqu', fin: 'er' };
+  assert(finaleJuste(m, 'er') && finaleJuste(m, ' -ER ') && finaleJuste(m, 'manquer') && !finaleJuste(m, 'é'));
+}
 
 assert.strictEqual(compterMots("L'école est   finie !"), 3);
 

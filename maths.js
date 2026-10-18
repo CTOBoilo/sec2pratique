@@ -35,6 +35,12 @@ function poly(a, b) {
   return `${t} ${b < 0 ? '−' : '+'} ${Math.abs(b)}`;
 }
 
+// Coefficient devant une variable : 1 → '', −1 → '−', −3 → '−3'.
+const coef = a => (a === 1 ? '' : a === -1 ? '−' : `${a}`.replace('-', '−'));
+
+// Thèmes d'algèbre : l'onglet Maths en met une bonne part chaque semaine (voir PART_ALGEBRE dans themes.js).
+const ALGEBRE = ['expressions-algebriques', 'monomes', 'traduction-algebrique', 'suites', 'equations-1er-degre', 'equations-parentheses', 'problemes-equations'];
+
 const MATHS = {
   'nombres-negatifs': {
     titre: 'Nombres positifs et négatifs',
@@ -67,7 +73,7 @@ const MATHS = {
   'fractions': {
     titre: 'Fractions',
     gen(R) {
-      const b = R.int(2, 10), d = R.int(2, 10), a = R.int(1, b + 2), c = R.int(1, d + 2);
+      const b = R.int(2, 10), d = R.int(2, 10), pasUn = den => { let n; do n = R.int(1, den + 2); while (n === den); return n; }, a = pasUn(b), c = pasUn(d); // jamais 9/9
       const op = R.pick(['+', '−', '×', '÷']);
       const [n, den] = op === '+' ? [a * d + c * b, b * d] : op === '−' ? [a * d - c * b, b * d] : op === '×' ? [a * c, b * d] : [a * d, b * c];
       const expl = { '+': 'Trouve un dénominateur commun, additionne les numérateurs, puis simplifie.',
@@ -155,6 +161,80 @@ const MATHS = {
     },
   },
 
+  'monomes': {
+    titre: 'Monômes : multiplication et division',
+    gen(R) {
+      const a = R.nonZero(-6, 7), b0 = R.nonZero(-5, 6), f = R.int(0, 4);
+      const b = f === 4 && a + b0 === 0 ? b0 + Math.sign(b0) : b0, ab = a * b; // évite « 0x² »
+      if (f === 0) return { q: `Réduis : ${coef(a)}x × ${coef(b)}x`, rep: `${ab}x²`, type: 'expr', expl: `Coefficients : ${a} × ${par(b)} = ${ab}. Variables : x × x = x².` };
+      if (f === 1) return { q: `Réduis : ${coef(a)}x × ${par(b)}`, rep: `${ab}x`, type: 'expr', expl: `On multiplie les coefficients : ${a} × ${par(b)} = ${ab}.` };
+      if (f === 2) return { q: `Réduis : ${coef(ab)}x² ÷ ${coef(b)}x`, rep: `${a}x`, type: 'expr', expl: `Coefficients : ${ab} ÷ ${par(b)} = ${a}. Variables : x² ÷ x = x.` };
+      if (f === 3) return { q: `Réduis : (${coef(a)}x)²`, rep: `${a * a}x²`, type: 'expr', expl: `(${a}x)² = ${a}x × ${a}x = ${a * a}x². Le carré s'applique au coefficient ET à la variable.` };
+      return { q: `Réduis : ${coef(a)}x² ${b < 0 ? '−' : '+'} ${coef(Math.abs(b))}x² ${a < 0 ? '+' : '−'} ${Math.abs(a) + 1}x`, rep: `${a + b}x² ${a < 0 ? '+' : '−'} ${Math.abs(a) + 1}x`, type: 'expr', expl: `Seuls les termes semblables s'additionnent : les x² ensemble (${a} + ${par(b)} = ${a + b}), les x à part.` };
+    },
+  },
+
+  'traduction-algebrique': {
+    titre: 'Traduire en expression algébrique',
+    gen(R) {
+      const [k, nom] = R.pick([[2, 'double'], [3, 'triple'], [4, 'quadruple']]), b = R.int(2, 12), c = R.int(2, 9);
+      const [texte, rep] = R.pick([
+        [`le ${nom} d'un nombre, diminué de ${b}`, `${k}x − ${b}`],
+        [`la moitié d'un nombre, augmentée de ${b}`, `x/2 + ${b}`],
+        [`le ${nom} de la somme d'un nombre et de ${b}`, `${k}(x + ${b})`],
+        [`la somme du ${nom} d'un nombre et de ${b}`, `${k}x + ${b}`],
+        [`le carré d'un nombre, diminué de ${b}`, `x² − ${b}`],
+        [`${b} de moins que le ${nom} d'un nombre`, `${k}x − ${b}`],
+        [`le périmètre d'un rectangle de longueur x et de largeur ${b}`, `2x + ${2 * b}`],
+        [`le prix de x billets à ${b} $ chacun, plus ${c} $ de frais`, `${b}x + ${c}`],
+        [`l'âge de Léa dans ${b} ans, si elle a x ans aujourd'hui`, `x + ${b}`],
+        [`le nombre de roues de x vélos et de ${c} tricycles`, `2x + ${3 * c}`],
+      ]);
+      return { q: `Écris l'expression algébrique (x = le nombre) :<div class="phrase">${texte[0].toUpperCase() + texte.slice(1)}</div>`, rep, type: 'expr', expl: `Une réponse possible : ${rep}. Lis la phrase morceau par morceau : « le double » = 2 ×, « diminué de » = −, « la somme » = +.` };
+    },
+  },
+
+  'suites': {
+    titre: 'Suites et régularités',
+    gen(R) {
+      const a = R.pick([2, 3, 4, 5, 6, 7, -2, -3]), b = R.int(-5, 10), t = n => a * n + b;
+      const liste = [1, 2, 3, 4].map(t).join(' ; ') + ' ; …';
+      const regle = poly(a, b).replace('x', 'n'), f = R.int(0, 2);
+      if (f === 0) return { q: `Suite : ${liste}<br>Quelle est la règle ? <small>(n = le rang)</small>`, rep: regle, type: 'expr', expl: `On ajoute ${a} chaque fois → ${a}n. Pour n = 1 : ${a} × 1 = ${a}, il faut ${b < 0 ? 'enlever' : 'ajouter'} ${Math.abs(b)} pour obtenir ${t(1)}. Règle : ${regle}.` };
+      const n = R.int(10, 30);
+      if (f === 1) return { q: `Suite : ${liste}<br>Quel est le ${n}<sup>e</sup> terme ?`, rep: t(n), type: 'nombre', expl: `Règle : ${regle}. Pour n = ${n} : ${a} × ${n} ${b < 0 ? '−' : '+'} ${Math.abs(b)} = ${t(n)}.` };
+      return { q: `Suite : ${liste}<br>Quel est le rang du terme ${t(n)} ?`, rep: n, type: 'nombre', expl: `Règle : ${regle} = ${t(n)}. On résout : ${a}n = ${t(n) - b}, donc n = ${n}.` };
+    },
+  },
+
+  'equations-parentheses': {
+    titre: 'Équations avec parenthèses ou fractions',
+    gen(R) {
+      const x = R.int(-8, 10), a = R.int(2, 6), b = R.nonZero(-7, 7), f = R.int(0, 2);
+      if (f === 0) return { q: `Résous : ${a}(${poly(1, b)}) = ${a * (x + b)}<br><small>x = ?</small>`, rep: x, type: 'nombre', expl: `Distribue : ${poly(a, a * b)} = ${a * (x + b)}. Puis ${a}x = ${a * x}, donc x = ${x}.` };
+      if (f === 1) {
+        let c; do c = R.nonZero(-4, 5); while (c === a);
+        const d = a * (x + b) - c * x;
+        return { q: `Résous : ${a}(${poly(1, b)}) = ${poly(c, d)}<br><small>x = ?</small>`, rep: x, type: 'nombre', expl: `Distribue : ${poly(a, a * b)} = ${poly(c, d)}. Regroupe : ${a - c}x = ${d - a * b}, donc x = ${x}.` };
+      }
+      const k = R.int(-6, 8), c = k + b;
+      return { q: `Résous : x/${a} ${b < 0 ? '−' : '+'} ${Math.abs(b)} = ${c}<br><small>x = ?</small>`, rep: a * k, type: 'nombre', expl: `x/${a} = ${c} − ${par(b)} = ${k}, puis multiplie par ${a} : x = ${a * k}.` };
+    },
+  },
+
+  'problemes-equations': {
+    titre: 'Problèmes à résoudre par une équation',
+    gen(R) {
+      const f = R.int(0, 4);
+      if (f === 0) { const x = R.int(8, 16), d = R.int(2, 6); return { q: `Léa a ${d} ans de plus que son frère. Ensemble, ils ont ${2 * x + d} ans. Quel âge a son frère ?`, rep: x, type: 'nombre', expl: `Frère : x, Léa : x + ${d}. Équation : x + x + ${d} = ${2 * x + d}, donc 2x = ${2 * x}, x = ${x}.` }; }
+      if (f === 1) { const x = R.int(5, 40); return { q: `La somme de trois nombres entiers consécutifs est ${3 * x + 3}. Quel est le plus petit ?`, rep: x, type: 'nombre', expl: `x + (x + 1) + (x + 2) = ${3 * x + 3}, donc 3x + 3 = ${3 * x + 3}, x = ${x}.` }; }
+      if (f === 2) { const l = R.int(3, 15); return { q: `La longueur d'un rectangle est le double de sa largeur. Son périmètre est ${6 * l} cm. Quelle est sa largeur (cm) ?`, rep: l, type: 'nombre', expl: `Largeur : x, longueur : 2x. Périmètre : 2(x + 2x) = 6x = ${6 * l}, donc x = ${l}.` }; }
+      if (f === 3) { const x = R.int(10, 60), k = R.int(2, 4); return { q: `Max a économisé un certain montant. Sa sœur a ${k} fois plus que lui. Ensemble, ils ont ${(k + 1) * x} $. Combien Max a-t-il économisé ($) ?`, rep: x, type: 'nombre', expl: `Max : x, sa sœur : ${k}x. x + ${k}x = ${k + 1}x = ${(k + 1) * x}, donc x = ${x}.` }; }
+      const frais = R.pick([10, 15, 20, 25]), prix = R.pick([4, 5, 6, 8]), v = R.int(3, 12);
+      return { q: `Un abonnement au gym coûte ${frais} $ plus ${prix} $ par visite. Tu as payé ${frais + prix * v} $. Combien de visites as-tu faites ?`, rep: v, type: 'nombre', expl: `${frais} + ${prix}x = ${frais + prix * v}, donc ${prix}x = ${prix * v}, x = ${v}.` };
+    },
+  },
+
   'perimetre-aire': {
     titre: 'Périmètre et aire',
     gen(R) {
@@ -229,7 +309,7 @@ function verifierNombre(texte, rep, tol = 0.005) {
 // Transforme « 3x² − 2(x + 1) » en fonction JS ; null si illisible.
 function exprVersFonction(texte) {
   let s = String(texte).toLowerCase().replace(/\s/g, '').replace(/[−–]/g, '-').replace(/,/g, '.')
-    .replace(/[×·]/g, '*').replace(/²/g, '^2').replace(/³/g, '^3');
+    .replace(/[×·]/g, '*').replace(/²/g, '^2').replace(/³/g, '^3').replace(/n/g, 'x'); // n (rang d'une suite) = x
   if (!s || !/^[0-9x+\-*/().^]+$/.test(s)) return null; // liste blanche : rien d'autre ne passe
   s = s.replace(/(\d|x|\))(?=x|\()/g, '$1*').replace(/\)(?=\d)/g, ')*');
   s = s.replace(/(\d*\.?\d+|x)\^(\d+)/g, 'Math.pow($1,$2)');
@@ -244,4 +324,4 @@ function verifierExpr(texte, attendu) {
   return [-2, -0.5, 0, 1, 3, 7].every(x => Math.abs(f(x) - g(x)) < 1e-9);
 }
 
-if (typeof module !== 'undefined') module.exports = { MATHS, creerRng, lireNombre, verifierNombre, verifierExpr, frac };
+if (typeof module !== 'undefined') module.exports = { MATHS, ALGEBRE, creerRng, exprVersFonction, lireNombre, verifierNombre, verifierExpr, frac };

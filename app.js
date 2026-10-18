@@ -70,11 +70,13 @@ function questionsConjugaison(R, temps, anciens, verbes) {
   return out;
 }
 
+// Une part fixe des questions est de l'algèbre ; les thèmes d'algèbre de la semaine comptent double.
 function questionsMaths(R, actuels, anciens) {
-  if (!actuels.length && !anciens.length) return [];
+  const part = typeof PART_ALGEBRE === 'number' ? PART_ALGEBRE : 0.7;
+  const algSemaine = actuels.filter(k => ALGEBRE.includes(k)), alg = [...algSemaine, ...algSemaine, ...ALGEBRE];
   const out = [], vus = new Set();
   for (let essais = 0; out.length < NB.maths && essais < 100; essais++) {
-    const cle = tirer(R, actuels, anciens), q = MATHS[cle].gen(R);
+    const cle = R.next() < part || (!actuels.length && !anciens.length) ? R.pick(alg) : tirer(R, actuels, anciens), q = MATHS[cle].gen(R);
     if (vus.has(q.q) && essais < 80) continue;
     vus.add(q.q);
     out.push({ theme: MATHS[cle].titre, ...q, html: q.q });

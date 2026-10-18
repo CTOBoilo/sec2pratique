@@ -1,7 +1,7 @@
 // Auto-vérification : node test.js  (aucune dépendance)
 const assert = require('assert');
 const { conjuguer, reponsesAcceptees, VERBES, TEMPS } = require('./conjugaison.js');
-const { MATHS, creerRng, lireNombre, verifierNombre, verifierExpr } = require('./maths.js');
+const { MATHS, ALGEBRE, creerRng, lireNombre, verifierNombre, verifierExpr, exprVersFonction } = require('./maths.js');
 const { GRAMMAIRE, TEXTES, FINALES } = require('./banque.js');
 const { THEMES } = require('./themes.js');
 const { construire, normaliser, estJuste, compterMots, finaleJuste } = require('./app.js');
@@ -72,6 +72,27 @@ for (const [cle, m] of Object.entries(MATHS)) {
     const f = s => new Function('x', `return ${s.replace(/−/g, '-').replace(/(\d)x/g, '$1*x')}`)(q.rep);
     assert.strictEqual(f(g), f(d), q.q);
   }
+}
+
+// Équations avec parenthèses / fractions : la réponse vérifie l'équation
+{
+  const R = creerRng(11);
+  for (let i = 0; i < 300; i++) {
+    const q = MATHS['equations-parentheses'].gen(R);
+    const [g, d] = q.q.replace(/^Résous : /, '').split('<br>')[0].split(' = ').map(exprVersFonction);
+    assert(Math.abs(g(q.rep) - d(q.rep)) < 1e-9, q.q);
+  }
+}
+assert(verifierExpr('4n - 1', '4x − 1'), 'n accepté comme variable');
+assert(verifierExpr('12x²', '3x × 4x') && verifierExpr('0.5x+4', 'x/2 + 4'));
+assert(ALGEBRE.every(k => MATHS[k]), 'thèmes d\'algèbre existants');
+// Environ 70 % d'algèbre sur l'année
+{
+  let alg = 0, total = 0;
+  for (let d = new Date('2026-08-31T12:00'); d < new Date('2027-06-30'); d.setDate(d.getDate() + 7))
+    for (const q of construire(d).maths) { total++; alg += Object.entries(MATHS).some(([k, m]) => ALGEBRE.includes(k) && m.titre === q.theme); }
+  assert(alg / total > 0.6, `seulement ${Math.round(alg / total * 100)} % d'algèbre`);
+  console.log(`  algèbre : ${Math.round(alg / total * 100)} % des questions de maths sur l'année`);
 }
 
 // --- Grammaire : chaque bonne réponse fait partie des choix

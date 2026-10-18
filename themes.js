@@ -19,11 +19,16 @@
 // verbes    : (facultatif) liste de verbes à l'infinitif, ex. ['aller', 'finir', 'prendre']
 // maths     : nombres-negatifs, priorite-operations, fractions, puissances-racines, pourcentages,
 //             rapports-taux, proportionnalite, expressions-algebriques, equations-1er-degre,
-//             perimetre-aire, aire-solides, statistiques, probabilites
+//             perimetre-aire, aire-solides, statistiques, probabilites,
+//             monomes, traduction-algebrique, suites, equations-parentheses, problemes-equations
 // sujet     : (facultatif) sujet de rédaction imposé, sinon un sujet est tiré au hasard
 // mots      : (facultatif) nombre de mots visé pour le texte, 100 par défaut
 //
 // Attention : garde les guillemets '...' et la virgule à la fin de chaque ligne.
+
+// Part des questions de maths qui sont de l'algèbre, peu importe le thème de la semaine.
+// 0.7 = 7 questions sur 10. Mets 0 pour suivre seulement le calendrier, 1 pour 100 % algèbre.
+const PART_ALGEBRE = 0.7;
 
 const THEMES = [
   { debut: '2026-08-31', grammaire: ['classes-de-mots'], temps: ['present'], maths: ['nombres-negatifs', 'priorite-operations'] },
@@ -49,4 +54,4 @@ const THEMES = [
   { debut: '2027-06-07', grammaire: ['fonctions-syntaxiques', 'participe-passe-avoir', 'homophones'], temps: ['present', 'imparfait', 'passe-compose', 'futur', 'conditionnel', 'subjonctif'], maths: ['equations-1er-degre', 'pourcentages', 'perimetre-aire', 'probabilites'], sujet: 'Qu\'as-tu le plus aimé apprendre cette année ? Explique.' },
 ];
 
-if (typeof module !== 'undefined') module.exports = { THEMES };
+if (typeof module !== 'undefined') module.exports = { THEMES, PART_ALGEBRE };

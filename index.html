@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pratique Sec 2</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✏️</text></svg>">
+<style>
+  :root {
+    --fond: #f6f5f1; --carte: #fff; --texte: #1d1d1f; --doux: #6b6b70; --bord: #e2e0da;
+    --accent: #2f5fd0; --ok: #1f8a4c; --ko: #c0392b; --marque: #ffe58a; --orange: #c77700; --sur-accent: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fond: #17181b; --carte: #222327; --texte: #ececee; --doux: #9a9aa2; --bord: #34353a;
+      --accent: #7ea2ff; --ok: #4cc27f; --ko: #ff7a6b; --marque: #6b5a12; --orange: #f0a64a; --sur-accent: #10131a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fond); color: var(--texte); font: 17px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+  h1 { font-size: 1.4rem; margin: 8px 0 0; }
+  #semaine { color: var(--doux); margin: 0; }
+  #avert { background: var(--ko); color: #fff; padding: 8px 12px; border-radius: 8px; margin-top: 12px; }
+  nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px; margin: 16px 0; }
+  [role=tab] { padding: 10px 12px; border: 1px solid var(--bord); border-radius: 10px; background: var(--carte); color: var(--texte); font: inherit; cursor: pointer; white-space: nowrap; }
+  [role=tab][aria-selected=true] { background: var(--accent); border-color: var(--accent); color: var(--sur-accent); }
+  ol.questions { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; counter-reset: q; }
+  .q { background: var(--carte); border: 2px solid var(--bord); border-radius: 12px; padding: 14px 16px; counter-increment: q; }
+  .q.ok { border-color: var(--ok); }
+  .q.ko { border-color: var(--ko); }
+  .theme { font-size: .8rem; color: var(--doux); text-transform: uppercase; letter-spacing: .04em; }
+  .theme::before { content: counter(q) ". "; }
+  .phrase { font-size: 1.1rem; margin-top: 6px; }
+  mark { background: var(--marque); color: inherit; padding: 0 3px; border-radius: 3px; }
+  .trou { letter-spacing: 1px; color: var(--doux); }
+  .choix { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; }
+  .choix label { cursor: pointer; }
+  input.rep { margin-top: 10px; width: 100%; max-width: 320px; font: inherit; padding: 8px 10px; border: 1px solid var(--bord); border-radius: 8px; background: var(--fond); color: var(--texte); }
+  .retro { margin-top: 8px; }
+  .ok .retro { color: var(--ok); }
+  .ko .retro { color: var(--ko); }
+  .retro small { color: var(--doux); }
+  .barre { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0 32px; }
+  button.action { font: inherit; padding: 10px 18px; border: 0; border-radius: 10px; background: var(--accent); color: var(--sur-accent); cursor: pointer; }
+  button.secondaire { background: var(--carte); color: var(--texte); border: 1px solid var(--bord); }
+  .score { font-size: 1.3rem; font-weight: 600; }
+  .meilleur { color: var(--doux); font-size: .9rem; }
+  #sujet { font-size: 1.15rem; background: var(--carte); border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 8px; }
+  textarea { width: 100%; min-height: 280px; font: inherit; padding: 12px; border: 1px solid var(--bord); border-radius: 10px; background: var(--carte); color: var(--texte); }
+  #compteur { font-weight: 600; }
+  #compteur.bon { color: var(--ok); }
+  #compteur.loin { color: var(--orange); }
+  .aide { color: var(--doux); font-size: .9rem; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>✏️ Pratique de la semaine</h1>
+      <p id="semaine"></p>
+    </div>
+    <button id="nouvelle" class="action secondaire">🔄 Nouvelle série</button>
+  </header>
+  <div id="avert" hidden></div>
+
+  <nav role="tablist">
+    <button role="tab" data-tab="grammaire">Grammaire</button>
+    <button role="tab" data-tab="conjugaison">Conjugaison</button>
+    <button role="tab" data-tab="redaction">Rédaction</button>
+    <button role="tab" data-tab="maths">Maths</button>
+  </nav>
+
+  <section id="grammaire" role="tabpanel" hidden>
+    <ol class="questions"></ol>
+    <div class="barre"><button class="action corriger">Corriger</button><span class="score"></span><span class="meilleur"></span></div>
+  </section>
+
+  <section id="conjugaison" role="tabpanel" hidden>
+    <p class="aide">Écris seulement le verbe conjugué (ex. : « ai mangé »). Les accents comptent !</p>
+    <ol class="questions"></ol>
+    <div class="barre"><button class="action corriger">Corriger</button><span class="score"></span><span class="meilleur"></span></div>
+  </section>
+
+  <section id="redaction" role="tabpanel" hidden>
+    <p id="sujet"></p>
+    <p class="aide">Relis-toi : majuscules, ponctuation, accords dans le GN, accord du verbe, participes passés. Ton brouillon est gardé sur cet appareil.</p>
+    <textarea id="texte" aria-label="Ton texte" spellcheck="false" autocorrect="off" placeholder="Écris ton texte ici…"></textarea>
+    <div class="barre"><span id="compteur"></span><button id="copier" class="action secondaire">Copier</button><button id="courriel" class="action">Envoyer par courriel</button></div>
+  </section>
+
+  <section id="maths" role="tabpanel" hidden>
+    <p class="aide">Réponses en nombre entier, décimal (0,75) ou fraction (3/4). Pour les expressions : 3x + 5, x^2 ou x².</p>
+    <ol class="questions"></ol>
+    <div class="barre"><button class="action corriger">Corriger</button><span class="score"></span><span class="meilleur"></span></div>
+  </section>
+</main>
+<script src="banque.js"></script>
+<script src="conjugaison.js"></script>
+<script src="maths.js"></script>
+<script src="themes.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

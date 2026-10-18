@@ -245,8 +245,10 @@ if (typeof document !== 'undefined') {
       try { await navigator.clipboard.writeText(corps()); $('#copier').textContent = 'Copié ✓'; } catch { zone.select(); $('#copier').textContent = 'Fais Cmd+C'; }
       setTimeout(() => ($('#copier').textContent = 'Copier'), 2000);
     };
+    // Nouveau message Gmail dans un autre onglet ; le destinataire est choisi dans Gmail (rien de personnel dans le code public).
     $('#courriel').onclick = () => {
-      location.href = `mailto:?subject=${encodeURIComponent('Rédaction — ' + $('#semaine').textContent)}&body=${encodeURIComponent(corps())}`;
+      const url = 'https://mail.google.com/mail/?' + new URLSearchParams({ view: 'cm', fs: '1', su: 'Rédaction — ' + $('#semaine').textContent, body: corps() });
+      window.open(url, '_blank', 'noopener');
     };
   }
 
